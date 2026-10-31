@@ -34,4 +34,8 @@ def test_pipeline():
     assert response.status_code == 200
     assert response.json["status"] == "ready"
     assert len(response.json["stages"]) == 5
+    
+    
+def test_failure_demo():
+    assert 10 == 20
 
