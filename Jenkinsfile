@@ -2,64 +2,69 @@
 pipeline {
     agent any
 
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
+    environment {
+        IMAGE_NAME = 'devops-toolchain-simulator:ci'
+        CONTAINER_NAME = 'devops-ci-app'
+        APP_PORT = '5001'
+    }
+
     stages {
 
         stage('Source Code Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Jagan-mohan-rao/-devops-toolchain-simulator.git'
+                checkout scm
+                echo 'Source code downloaded successfully!'
+            }
+        }
+
+        stage('Automated Unit Testing') {
+            steps {
+                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app python:3.12-slim sh scripts/run_tests.sh'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t devops-toolchain-simulator:ci .'
+                sh 'sh scripts/build_image.sh'
             }
         }
 
-        stage('Test Application') {
+        stage('Test Docker Container') {
             steps {
-                sh '''
-                    docker run -d --name devops-ci-test \
-                        devops-toolchain-simulator:ci
-
-                    sleep 5
-
-                    docker exec devops-ci-test python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:5000/health').read().decode())"
-
-                    docker rm -f devops-ci-test
-                '''
+                sh 'sh scripts/test_container.sh'
             }
         }
 
         stage('Deploy Application') {
             steps {
-                sh '''
-                    docker rm -f devops-ci-app || true
-                    docker run -d --name devops-ci-app \
-                        -p 5001:5000 \
-                        devops-toolchain-simulator:ci
-                '''
+                sh 'sh scripts/deploy.sh'
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sh '''
-                    sleep 5
-                    docker exec devops-ci-app python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:5000/health').read().decode())"
-                '''
+                sh 'sh scripts/verify_deployment.sh'
             }
         }
     }
 
     post {
+        always {
+            archiveArtifacts artifacts: 'test-results.xml',
+                allowEmptyArchive: true
+        }
+
         success {
             echo 'CI/CD Pipeline completed successfully!'
+            echo 'Application URL: http://localhost:5001'
         }
+
         failure {
-            echo 'CI/CD Pipeline failed. Check the stage logs.'
+            echo 'CI/CD Pipeline failed. Check the Console Output.'
         }
     }
 }
-

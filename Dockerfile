@@ -14,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY app/ ./app/
 
+COPY scripts/ ./scripts/
+
 # Expose application port
 EXPOSE 5000
 
