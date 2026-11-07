@@ -38,7 +38,7 @@ The `jenkins/Dockerfile` is based on `jenkins/jenkins:lts-jdk21` and installs th
 
 ## Results and measurement notes
 
-The repository currently implements **6 Jenkins stages**, **3 HTTP endpoints**, and **4 pytest test functions** (three endpoint checks and one basic assertion). These are counts from the checked-in configuration and tests—not a claim of a measured pipeline run. No benchmark results for pipeline duration, CPU, memory, or performance improvement are included, so none are claimed here. Add timings or resource figures only after measuring them in a documented environment.
+This currently implements **6 Jenkins stages**, **3 HTTP endpoints**, and **4 pytest test functions** (three endpoint checks and one basic assertion). 
 
 ## Run locally
 
